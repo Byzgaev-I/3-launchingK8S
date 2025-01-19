@@ -164,6 +164,8 @@ NAME                          READY   STATUS     RESTARTS   AGE
 nginx-init-59c497c487-49lkm   0/1     Init:0/1   0          9s
 ```
 
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/2-1.png)
+
 ### 2. Создание Service
 
 ```yaml
@@ -195,3 +197,4 @@ waiting for service
 Name:      nginx-init-service.default.svc.cluster.local
 Address 1: 10.152.183.216 nginx-init-service.default.svc.cluster.local
 ```
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/2-2.png) 
