@@ -111,7 +111,7 @@ spec:
 kubectl exec test-multitool -- curl nginx-multitool-service:80
 ```
 
-Результат:
+Результат в этих строчках:
 ```html
 <!DOCTYPE html>
 <html>
