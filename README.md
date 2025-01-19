@@ -83,6 +83,7 @@ nginx-multitool-d9d8957c8-5sgmb   2/2     Running   0          10h
 nginx-multitool-d9d8957c8-8sclb   2/2     Running   0          31s
 ```
 
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-3%20-масштаб%20до%202.png)
 
 ### 3. Создание Service
 
