@@ -65,7 +65,7 @@ spec:
 
 ![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-1.png)
 
-
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-2доступность%20сервисов.png)
 
 ### 2. Масштабирование
 
@@ -83,7 +83,6 @@ nginx-multitool-d9d8957c8-5sgmb   2/2     Running   0          10h
 nginx-multitool-d9d8957c8-8sclb   2/2     Running   0          31s
 ```
 
-![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-2доступность%20сервисов.png)
 
 ### 3. Создание Service
 
