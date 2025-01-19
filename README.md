@@ -1,24 +1,193 @@
 # Домашнее задание к занятию «Запуск приложений в K8S»
 
-### Цель задания
+## Цель задания
 
 В тестовой среде для работы с Kubernetes необходимо развернуть Deployment с приложением, состоящим из нескольких контейнеров, и масштабировать его.
 
-### Чеклист готовности к домашнему заданию
+## Чеклист готовности к домашнему заданию
 
-1. Установленное k8s-решение (например, MicroK8S).
-2. Установленный локальный kubectl.
-3. Редактор YAML-файлов с подключённым git-репозиторием.
+1. ✅ Установленное k8s-решение (MicroK8S).
+2. ✅ Установленный локальный kubectl.
+3. ✅ Редактор YAML-файлов с подключённым git-репозиторием.
 
-### Инструменты и дополнительные материалы
+## Инструменты и дополнительные материалы
 
-1. [Описание](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) Deployment и примеры манифестов.
-2. [Описание](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) Init-контейнеров.
-3. [Описание](https://github.com/wbitt/Network-MultiTool) Multitool.
+1. [Описание Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) и примеры манифестов
+2. [Описание Init-контейнеров](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/)
+3. [Описание Multitool](https://github.com/wbitt/Network-MultiTool)
 
 ## Задание 1. Создать Deployment и обеспечить доступ к репликам приложения из другого Pod
 
-1. Создан Deployment с двумя контейнерами (nginx и multitool):
+### 1. Создание Deployment
+
+Создаем deployment с двумя контейнерами (nginx и multitool):
+
+```yaml
+# task1/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-multitool
+  labels:
+    app: nginx-multitool
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-multitool
+  template:
+    metadata:
+      labels:
+        app: nginx-multitool
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: multitool
+        image: wbitt/network-multitool:latest
+        env:
+        - name: HTTP_PORT
+          value: "8080"
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+```
+
+### 2. Масштабирование
+
+Увеличиваем количество реплик до 2:
+
 ```bash
-kubectl apply -f task1/deployment.yaml
-# 3-launchingK8S
+kubectl scale deployment nginx-multitool --replicas=2
+```
+
+Результат:
+```bash
+kubectl get pods -l app=nginx-multitool
+NAME                              READY   STATUS    RESTARTS   AGE
+nginx-multitool-d9d8957c8-5sgmb   2/2     Running   0          10h
+nginx-multitool-d9d8957c8-8sclb   2/2     Running   0          31s
+```
+
+### 3. Создание Service
+
+```yaml
+# task1/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-multitool-service
+spec:
+  selector:
+    app: nginx-multitool
+  ports:
+    - name: nginx
+      port: 80
+      targetPort: 80
+    - name: multitool
+      port: 8080
+      targetPort: 8080
+```
+
+### 4. Проверка доступности
+
+```bash
+kubectl exec test-multitool -- curl nginx-multitool-service:80
+```
+
+Результат:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+...
+</html>
+```
+
+## Задание 2. Создать Deployment и обеспечить старт основного контейнера при выполнении условий
+
+### 1. Создание Deployment с Init-контейнером
+
+```yaml
+# task2/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-init
+  labels:
+    app: nginx-init
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-init
+  template:
+    metadata:
+      labels:
+        app: nginx-init
+    spec:
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nslookup nginx-init-service.default.svc.cluster.local; do echo waiting for service; sleep 2; done;']
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+```
+
+Состояние пода до создания сервиса:
+```bash
+kubectl get pods -l app=nginx-init
+NAME                          READY   STATUS     RESTARTS   AGE
+nginx-init-59c497c487-49lkm   0/1     Init:0/1   0          9s
+```
+
+### 2. Создание Service
+
+```yaml
+# task2/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-init-service
+spec:
+  selector:
+    app: nginx-init
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+Состояние пода после создания сервиса:
+```bash
+kubectl get pods -l app=nginx-init
+NAME                          READY   STATUS    RESTARTS   AGE
+nginx-init-59c497c487-49lkm   1/1     Running   0          2m10s
+```
+
+Логи init-контейнера:
+```
+nslookup: can't resolve 'nginx-init-service.default.svc.cluster.local'
+waiting for service
+Name:      nginx-init-service.default.svc.cluster.local
+Address 1: 10.152.183.216 nginx-init-service.default.svc.cluster.local
+```
