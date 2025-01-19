@@ -121,6 +121,9 @@ kubectl exec test-multitool -- curl nginx-multitool-service:80
 </html>
 ```
 
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-4.png)
+
+
 ## Задание 2. Создать Deployment и обеспечить старт основного контейнера при выполнении условий
 
 ### 1. Создание Deployment с Init-контейнером
