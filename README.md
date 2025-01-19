@@ -62,6 +62,11 @@ spec:
             cpu: "500m"
 ```
 
+
+![image](https://github.com/Byzgaev-I/3-launchingK8S/blob/main/1-1.png)
+
+
+
 ### 2. Масштабирование
 
 Увеличиваем количество реплик до 2:
